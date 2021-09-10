@@ -7,3 +7,6 @@ lmdb
 fasttext
 configargparse
 pyarrow
+pandas
+transforms3d
+matplotlib

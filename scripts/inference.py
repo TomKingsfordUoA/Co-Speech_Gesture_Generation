@@ -96,7 +96,7 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
     return out_poses
 
 
-def main(checkpoint_path, transcript_path):
+def main(checkpoint_path, transcript_path, vocab_cache_path):
     args, generator, loss_fn, lang_model, out_dim = utils.train_utils.load_checkpoint_and_model(
         checkpoint_path, device)
     pprint.pprint(vars(args))
@@ -104,7 +104,6 @@ def main(checkpoint_path, transcript_path):
     os.makedirs(save_path, exist_ok=True)
 
     # load lang_model
-    vocab_cache_path = os.path.join(os.path.split(args.train_data_path[0])[0], 'vocab_cache.pkl')
     with open(vocab_cache_path, 'rb') as f:
         lang_model = pickle.load(f)
 
@@ -165,6 +164,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("ckpt_path", type=Path)
     parser.add_argument("transcript_path", type=Path)
+    parser.add_argument("vocab_cache_path", type=Path)
     args = parser.parse_args()
 
-    main(args.ckpt_path, args.transcript_path)
+    main(args.ckpt_path, args.transcript_path, args.vocab_cache_path)
