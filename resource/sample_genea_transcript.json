@@ -1,10 +1,10 @@
 [
   {"alternatives":  [
     {"words":  [
-      {"word": "this", "start_time":  "0.0s", "end_time": "0.5s"},
-      {"word":  "is", "start_time":  "0.5s", "end_time":  "1.0s"},
-      {"word": "a", "start_time":  "1.0s", "end_time":  "1.5s"},
-      {"word": "test", "start_time":  "1.5s", "end_time":  "2.0s"}
+      {"word": "top", "start_time":  "0.0s", "end_time": "0.5s"},
+      {"word": "of", "start_time":  "0.5s", "end_time":  "1.0s"},
+      {"word": "the", "start_time":  "1.0s", "end_time":  "1.5s"},
+      {"word": "mountain", "start_time":  "1.5s", "end_time":  "2.0s"}
     ]}
   ]
   }

@@ -2,24 +2,20 @@ import argparse
 import math
 import pickle
 import pprint
+import time
 from pathlib import Path
 
-import librosa
-import numpy as np
-import time
-
+import joblib as jl
 import torch
 from scipy.signal import savgol_filter
-import joblib as jl
 
 import utils
+from data_loader.data_preprocessor import DataPreprocessor
 from pymo.preprocessing import *
 from pymo.viz_tools import *
 from pymo.writers import *
 from utils.data_utils import SubtitleWrapper, normalize_string
 from utils.train_utils import set_logger
-
-from data_loader.data_preprocessor import DataPreprocessor
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -96,6 +92,34 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
     return out_poses
 
 
+def make_mocap_data(poses):
+    pipeline = jl.load('../resource/data_pipe.sav')
+
+    # smoothing
+    n_poses = poses.shape[0]
+    out_poses = np.zeros((n_poses, poses.shape[1]))
+
+    for i in range(poses.shape[1]):
+        out_poses[:, i] = savgol_filter(poses[:, i], 15, 2)  # NOTE: smoothing on rotation matrices is not optimal
+
+    # rotation matrix to euler angles
+    out_poses = out_poses.reshape((out_poses.shape[0], -1, 9))
+    out_poses = out_poses.reshape((out_poses.shape[0], out_poses.shape[1], 3, 3))
+    out_euler = np.zeros((out_poses.shape[0], out_poses.shape[1] * 3))
+    for i in range(out_poses.shape[0]):  # frames
+        r = R.from_matrix(out_poses[i])
+        out_euler[i] = r.as_euler('ZXY', degrees=True).flatten()
+
+    return pipeline.inverse_transform([out_euler])
+
+
+def make_bvh(mocap_data, save_path, filename_prefix):
+    writer = BVHWriter()
+    out_bvh_path = os.path.join(save_path, filename_prefix + '_generated.bvh')
+    with open(out_bvh_path, 'w') as f:
+        writer.write(mocap_data[0], f)
+
+
 def main(checkpoint_path, transcript_path, vocab_cache_path):
     args, generator, loss_fn, lang_model, out_dim = utils.train_utils.load_checkpoint_and_model(
         checkpoint_path, device)
@@ -129,35 +153,12 @@ def main(checkpoint_path, transcript_path, vocab_cache_path):
     std = np.clip(std, a_min=0.01, a_max=None)
     out_poses = np.multiply(out_poses, std) + mean
 
+    # make mocap data:
+    mocap_data = make_mocap_data(out_poses)
+
     # make a BVH
     filename_prefix = '{}'.format(transcript_path.stem)
-    make_bvh(save_path, filename_prefix, out_poses)
-
-
-def make_bvh(save_path, filename_prefix, poses):
-    writer = BVHWriter()
-    pipeline = jl.load('../resource/data_pipe.sav')
-
-    # smoothing
-    n_poses = poses.shape[0]
-    out_poses = np.zeros((n_poses, poses.shape[1]))
-
-    for i in range(poses.shape[1]):
-        out_poses[:, i] = savgol_filter(poses[:, i], 15, 2)  # NOTE: smoothing on rotation matrices is not optimal
-
-    # rotation matrix to euler angles
-    out_poses = out_poses.reshape((out_poses.shape[0], -1, 9))
-    out_poses = out_poses.reshape((out_poses.shape[0], out_poses.shape[1], 3, 3))
-    out_euler = np.zeros((out_poses.shape[0], out_poses.shape[1] * 3))
-    for i in range(out_poses.shape[0]):  # frames
-        r = R.from_matrix(out_poses[i])
-        out_euler[i] = r.as_euler('ZXY', degrees=True).flatten()
-
-    bvh_data = pipeline.inverse_transform([out_euler])
-
-    out_bvh_path = os.path.join(save_path, filename_prefix + '_generated.bvh')
-    with open(out_bvh_path, 'w') as f:
-        writer.write(bvh_data[0], f)
+    make_bvh(mocap_data, save_path, filename_prefix)
 
 
 if __name__ == '__main__':
