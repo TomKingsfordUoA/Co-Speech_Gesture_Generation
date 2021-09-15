@@ -1,26 +1,17 @@
-import datetime
 import pprint
 import random
 import time
-import sys
-import numpy as np
-
-from torch.utils.data import DataLoader
-
-[sys.path.append(i) for i in ['.', '..']]
-
-from model import vocab
-from model.seq2seq_net import Seq2SeqNet
-from train_eval.train_seq2seq import train_iter_seq2seq
-from utils.average_meter import AverageMeter
-from utils.vocab_utils import build_vocab
-
-from config.parse_args import parse_args
 
 from torch import optim
+from torch.utils.data import DataLoader
 
-from data_loader.lmdb_data_loader import *
-import utils.train_utils
+from ..config.parse_args import parse_args
+from . import utils
+from .data_loader.lmdb_data_loader import *
+from .model.seq2seq_net import Seq2SeqNet
+from .train_eval.train_seq2seq import train_iter_seq2seq
+from .utils.average_meter import AverageMeter
+from .utils.vocab_utils import build_vocab
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

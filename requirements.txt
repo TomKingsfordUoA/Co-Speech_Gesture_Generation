@@ -10,3 +10,5 @@ pyarrow
 pandas
 transforms3d
 matplotlib
+joblib
+peakutils

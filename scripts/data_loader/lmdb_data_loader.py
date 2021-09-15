@@ -1,16 +1,15 @@
 import logging
 import os
 
-import numpy as np
 import lmdb as lmdb
+import numpy as np
+import pyarrow
 import torch
 from torch.nn.utils.rnn import pad_sequence
-
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import default_collate
 
-from data_loader.data_preprocessor import DataPreprocessor
-import pyarrow
+from ..data_loader.data_preprocessor import DataPreprocessor
 
 
 def word_seq_collate_fn(data):

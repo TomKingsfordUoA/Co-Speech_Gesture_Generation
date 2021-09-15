@@ -1,14 +1,12 @@
 import logging
+import math
 import os
-import random
+import time
 from logging.handlers import RotatingFileHandler
 
-import numpy as np
-import time
-import math
 import torch
 
-from train import init_model
+from ..train import init_model
 
 
 def set_logger(log_path=None, log_filename='log'):

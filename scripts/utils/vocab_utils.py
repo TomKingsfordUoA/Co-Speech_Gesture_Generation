@@ -5,7 +5,7 @@ import pickle
 import lmdb
 import pyarrow
 
-from model.vocab import Vocab
+from ..model.vocab import Vocab
 
 
 def build_vocab(name, dataset_list, cache_path, word_vec_path=None, feat_dim=None):

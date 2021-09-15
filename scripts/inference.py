@@ -9,13 +9,13 @@ import joblib as jl
 import torch
 from scipy.signal import savgol_filter
 
-import utils
-from data_loader.data_preprocessor import DataPreprocessor
-from pymo.preprocessing import *
-from pymo.viz_tools import *
-from pymo.writers import *
-from utils.data_utils import SubtitleWrapper, normalize_string
-from utils.train_utils import set_logger
+from . import utils
+from .data_loader.data_preprocessor import DataPreprocessor
+from .pymo.preprocessing import *
+from .pymo.viz_tools import *
+from .pymo.writers import *
+from .utils.data_utils import SubtitleWrapper, normalize_string
+from .utils.train_utils import set_logger
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -93,7 +93,7 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
 
 
 def make_mocap_data(poses):
-    pipeline = jl.load('../resource/data_pipe.sav')
+    pipeline = jl.load(os.path.join(os.path.dirname(__file__), '../resource/data_pipe.sav'))
 
     # smoothing
     n_poses = poses.shape[0]
@@ -121,8 +121,7 @@ def make_bvh(mocap_data, save_path, filename_prefix):
 
 
 def main(checkpoint_path, transcript_path, vocab_cache_path):
-    args, generator, loss_fn, lang_model, out_dim = utils.train_utils.load_checkpoint_and_model(
-        checkpoint_path, device)
+    args, generator, loss_fn, lang_model, out_dim = utils.train_utils.load_checkpoint_and_model(checkpoint_path, device)
     pprint.pprint(vars(args))
     save_path = '../output/infer_sample'
     os.makedirs(save_path, exist_ok=True)

@@ -1,8 +1,9 @@
 import logging
 import os
 import pickle
-import numpy as np
+
 import fasttext
+import numpy as np
 
 
 class Vocab:
