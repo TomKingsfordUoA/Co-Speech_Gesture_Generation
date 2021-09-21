@@ -110,14 +110,14 @@ def make_mocap_data(poses):
         r = R.from_matrix(out_poses[i])
         out_euler[i] = r.as_euler('ZXY', degrees=True).flatten()
 
-    return pipeline.inverse_transform([out_euler])
+    return pipeline.inverse_transform([out_euler])[0]
 
 
 def make_bvh(mocap_data, save_path, filename_prefix):
     writer = BVHWriter()
     out_bvh_path = os.path.join(save_path, filename_prefix + '_generated.bvh')
     with open(out_bvh_path, 'w') as f:
-        writer.write(mocap_data[0], f)
+        writer.write(mocap_data, f)
 
 
 def main(checkpoint_path, transcript_path, vocab_cache_path):
