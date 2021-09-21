@@ -20,7 +20,7 @@ from .utils.train_utils import set_logger
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
+def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None, verbose=1):
     out_list = []
     clip_length = words[-1][2]
 
@@ -41,7 +41,8 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
     else:
         num_subdivision = math.ceil((clip_length - unit_time) / stride_time) + 1
 
-    print('{}, {}, {}, {}'.format(num_subdivision, unit_time, clip_length, stride_time))
+    if verbose:
+        print('{}, {}, {}, {}'.format(num_subdivision, unit_time, clip_length, stride_time))
     num_subdivision = min(num_subdivision, 59)  # DEBUG: generate only for the first N divisions
 
     out_poses = None
@@ -56,9 +57,11 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
         word_indices[0] = lang_model.SOS_token
         word_indices[-1] = lang_model.EOS_token
         for w_i, word in enumerate(word_seq):
-            print(word[0], end=', ')
+            if verbose:
+                print(word[0], end=', ')
             word_indices[w_i + 1] = lang_model.get_word_index(word[0])
-        print(' ({}, {})'.format(start_time, end_time))
+        if verbose:
+            print(' ({}, {})'.format(start_time, end_time))
         in_text = torch.LongTensor(word_indices).unsqueeze(0).to(device)
 
         # prepare pre seq
@@ -84,7 +87,8 @@ def generate_gestures(args, pose_decoder, lang_model, words, seed_seq=None):
 
         out_list.append(out_seq)
 
-    print('Avg. inference time: {:.2} s'.format((time.time() - start) / num_subdivision))
+    if verbose:
+        print('Avg. inference time: {:.2} s'.format((time.time() - start) / num_subdivision))
 
     # aggregate results
     out_poses = np.vstack(out_list)

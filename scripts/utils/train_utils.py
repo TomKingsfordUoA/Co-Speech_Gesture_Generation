@@ -38,14 +38,16 @@ def save_checkpoint(state, filename):
     logging.info('Saved the checkpoint')
 
 
-def load_checkpoint_and_model(checkpoint_path, _device='cpu'):
-    print('loading checkpoint {}'.format(checkpoint_path))
+def load_checkpoint_and_model(checkpoint_path, _device='cpu', verbose=1):
+    if verbose:
+        print('loading checkpoint {}'.format(checkpoint_path))
     checkpoint = torch.load(checkpoint_path, map_location=_device)
     args = checkpoint['args']
     epoch = checkpoint['epoch']
     lang_model = checkpoint['lang_model']
     pose_dim = checkpoint['pose_dim']
-    print('epoch {}'.format(epoch))
+    if verbose:
+        print('epoch {}'.format(epoch))
 
     generator, loss_fn = init_model(args, lang_model, pose_dim, _device)
     generator.load_state_dict(checkpoint['gen_dict'])
